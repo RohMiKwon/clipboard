@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .modal{z-index:10000;display:flex;justify-content:center;align-items:center;position:fixed;top:0;right:0;bottom:0;left:0;background-color:rgba(0,0,0,.5);}
+        .modal .container{width:calc(100% - 80px);max-width:400px;min-height:200px;margin-bottom:10vh;padding:20px;border-radius:2px;background:#fff;}
+        .toast{display:none;position:fixed;margin:2px 0 0;padding:3px 5px 4px;border-radius:2px;background-color:rgba(0,0,0,.7);color:#fff}
+        /*.fake-clipboard-text{position:fixed;top:0;left:0;opacity:0}*/
+    </style>
+    <script src="clipboard.js"></script>
+</head>
+<body>
+<div class="modal">
+    <div class="container">
+        <button type="button" id="copy_url" class="btn">URL복사</button>
+
+        <button type="button" id="clipboardjs" class="btn">URL복사 (clipboardjs)</button>
+
+        <button type="button" class="btn" onClick="copyUrl(this)">URL복사 (inline)</button>
+
+        <div class="toast">copied</div>
+    </div>
+</div>
+
+<script src="http://ui-static.korea.ncsoft.corp/common/js/lib/jquery-1.11.3.min.js"></script>
+<script src="clipboard.js"></script>
+<script src="../clipboard.js"></script>
+
+<script>
+    //execCommand 활용
+    //https://jsfiddle.net/rohmi/wwv7pfsj/
+    ;(function(win, doc, $){
+        'use strict';
+
+        $(function(){
+            var toast = doc.querySelector('.toast'),
+                elCopyButton = doc.querySelector('#copy_url'),
+                copySuccess;
+
+            elCopyButton.addEventListener('click', function(){
+                // fake 요소 생성 및 append
+                var elFake = doc.createElement('textarea');
+
+                elFake.innerHTML = win.location.href;
+                elFake.setAttribute('class', 'fake-clipboard-text');
+                elFake.style.position = 'fixed';
+                elFake.style.top = 0;
+                elFake.style.left = 0;
+                elFake.style.opacity = 0;
+                doc.body.appendChild(elFake);
+
+                // 복사할 값의 범위 지정
+                elFake.focus();
+                elFake.setSelectionRange(0, 9999);
+
+                // 클립보드에 복사됐는지 확인
+                try{
+                    copySuccess = doc.execCommand('copy');
+                } catch(e) {
+                    copySuccess = false;
+                }
+
+                // 복사 완료됐을 때
+                if(copySuccess){
+                    if(elFake && elFake.parentNode){
+                        elFake.parentNode.removeChild(elFake);
+                    }
+
+                    toast.style.display = 'block';
+                }
+            });
+        });
+    })(window, document, jQuery);
+
+    //clipboardjs
+    //https://jsfiddle.net/rohmi/eoourb5e/
+    ;(function(win, doc, $){
+        'use strict';
+
+        $(function(){
+            var toast = document.querySelector('.toast');
+            var clipboard = new Clipboard('#clipboardjs', {
+                text: function(){
+                    return window.location.href;
+                }
+            });
+            clipboard.on('success', function(e){
+                console.log('copied: ', e.text);
+                e.clearSelection();
+                toast.style.display = 'block';
+            });
+        });
+    })(window, document, jQuery);
+</script>
+</body>
+</html>
